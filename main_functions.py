@@ -412,7 +412,7 @@ class MiniBatchPRI(BaseEstimator, ClusterMixin, TransformerMixin):
                 if self.alpha != 0:
 
                     FXk = -1 / (NX * sigma**2) * (K1@Xk - K1@np.ones(Xi.shape) * Xk)
-                    FXo = -1 / (NX * sigma**2) * (K3@Xoi - K3@np.ones(Xoi.shape) * Xk)
+                    FXo = -1 / (NXo * sigma**2) * (K3@Xoi - K3@np.ones(Xoi.shape) * Xk)
                     g = 2 / self.minibatch_size * (2 * (1 -
                                                         self.alpha) * FXk / V1 + 2 * (self.alpha * FXo) / V3)
                     if self.optimization != None:

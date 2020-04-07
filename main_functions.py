@@ -118,14 +118,14 @@ class PRI(BaseEstimator, ClusterMixin, TransformerMixin):
                     X = c * eta * (K1@Xk / num) + K3@Xo / num - c * eta * (K1@np.ones(X.shape) / num) * Xk
 
                 elif self.method == 'SGD':
-                    FXk = -1 / (NX**2 * 2 * sigma**2) * (K1@Xk - K1@np.ones(X.shape) * Xk)
-                    FXo = -1 / (NX * NXo * 2 * sigma**2) * (K3@Xo - K3@np.ones(X.shape) * Xk)
+                    FXk = -1 / (NX * sigma**2) * (K1@Xk - K1@np.ones(X.shape) * Xk)
+                    FXo = -1 / (NXo * sigma**2) * (K3@Xo - K3@np.ones(X.shape) * Xk)
                     g = 2 * (1 - self.alpha) * FXk / V1 + \
                         2 * (self.alpha * FXo) / V3
                     if self.optimization != None:
                         X = optimization_model.step(g, X, i)
                     else:
-                        X = X - self.learning_schedule(i) * ()
+                        X = X - self.learning_schedule(i) * g
                 else:
                     print('the selected method could not be recognized')
 
@@ -411,8 +411,8 @@ class MiniBatchPRI(BaseEstimator, ClusterMixin, TransformerMixin):
 
                 if self.alpha != 0:
 
-                    FXk = -1 / (NX**2 * 2 * sigma**2) * (K1@Xk - K1@np.ones(Xi.shape) * Xk)
-                    FXo = -1 / (NX * NXo * 2 * sigma**2) * (K3@Xoi - K3@np.ones(Xoi.shape) * Xk)
+                    FXk = -1 / (NX * sigma**2) * (K1@Xk - K1@np.ones(Xi.shape) * Xk)
+                    FXo = -1 / (NX * sigma**2) * (K3@Xoi - K3@np.ones(Xoi.shape) * Xk)
                     g = 2 / self.minibatch_size * (2 * (1 -
                                                         self.alpha) * FXk / V1 + 2 * (self.alpha * FXo) / V3)
                     if self.optimization != None:

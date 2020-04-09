@@ -27,9 +27,12 @@ class PRI(BaseEstimator, ClusterMixin, TransformerMixin):
         self.t1 = t1
         self.PC = PC
 
+        return self
+
     def fit(self, X, y=None):
         self.X = X
         self.cluster_centers_, self.labels_ = self.pri_fuction(X)
+        return self
 
     def pri_fuction(self, Xo):
 
@@ -320,9 +323,12 @@ class MiniBatchPRI(BaseEstimator, ClusterMixin, TransformerMixin):
         self.t1 = t1
         self.PC = PC
 
+        return self
+
     def fit(self, X, y=None):
         self.X = X
         self.cluster_centers_, self.labels_ = self.pri_MiniBatch(X)
+        return self
 
     def pri_MiniBatch(self, Xo):
 
@@ -662,6 +668,7 @@ class Nadam(BaseEstimator, ClusterMixin, TransformerMixin):
         for parameter, value in parameters.items():
             setattr(self, parameter, value)
         return self
+
 
 
 

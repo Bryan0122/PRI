@@ -664,14 +664,5 @@ class Nadam(BaseEstimator, ClusterMixin, TransformerMixin):
         return self
 
 
-data = sio.loadmat('DB.mat')['DB'][0, 0]
-happy = data['happy']
-sc = SpectralClustering(n_clusters=3, n_neighbors=5, gamma = 1000)
-sc.fit(happy)
-labels_happy = sc.labels_
-p = MiniBatchPRI(n_groups=3, lambda_=35, sigma_initial=70,
-                 reduction_ = False, t0=1, t1=100000)
-p.fit(happy)
-p.results()
 
 

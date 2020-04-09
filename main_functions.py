@@ -90,57 +90,59 @@ class PRI(BaseEstimator, ClusterMixin, TransformerMixin):
             V1 = 1 / (NX**2) * np.sum(K1)
             V2 = 1 / (NXo**2) * np.sum(K2)
             V3 = 1 / (NX * NXo) * np.sum(K3)
+            if V1 != 0 and V2 != 0 and V3 != 0:
 
-            # Compute Divergence
+                # Compute Divergence
 
-            D.append(2 * np.log(V3) - np.log(V1) - np.log(V2))
+                D.append(2 * np.log(V3) - np.log(V1) - np.log(V2))
 
-            # Cost Function
+                # Cost Function
 
-            J.append(-(1 - self.alpha) * np.log(V1) -
-                     2 * self.alpha * np.log(V3))
-            #  Stop criterion
-            if i == 0:
+                J.append(-(1 - self.alpha) * np.log(V1) -
+                         2 * self.alpha * np.log(V3))
 
-                stopc, BestX, pos, bestJ, Patient_C, pos = self.convergence(
-                    X, J[i], D[i], i,)
-            else:
-                stopc, BestX, pos, bestJ, Patient_C, pos = self.convergence(
-                    X, J[i], D[i], i, D[i - 1], J[i - 1], BestX, bestJ, Patient_C, pos)
+                #  Stop criterion
+                if i == 0:
 
-            Xk = X
-            # Update Xk
+                    stopc, BestX, pos, bestJ, Patient_C, pos = self.convergence(
+                        X, J[i], D[i], i,)
+                else:
+                    stopc, BestX, pos, bestJ, Patient_C, pos = self.convergence(
+                        X, J[i], D[i], i, D[i - 1], J[i - 1], BestX, bestJ, Patient_C, pos)
 
-            if self.alpha != 0:
-                if self.method == 'FP':
-                    c = (V3 / V1) * (NXo / NX)
-                    eta = (1 - self.alpha) / self.alpha
-                    num = K3@np.ones(Xo.shape)
-                    X = c * eta * (K1@Xk / num) + K3@Xo / num - c * eta * (K1@np.ones(X.shape) / num) * Xk
+                Xk = X
+                # Update Xk
 
-                elif self.method == 'SGD':
-                    FXk = -1 / (NX * sigma**2) * (K1@Xk - K1@np.ones(X.shape) * Xk)
-                    FXo = -1 / (NXo * sigma**2) * (K3@Xo - K3@np.ones(X.shape) * Xk)
-                    g = 2 * (1 - self.alpha) * FXk / V1 + \
-                        2 * (self.alpha * FXo) / V3
-                    if self.optimization != None:
-                        X = optimization_model.step(g, X, i)
+                if self.alpha != 0:
+                    if self.method == 'FP':
+                        c = (V3 / V1) * (NXo / NX)
+                        eta = (1 - self.alpha) / self.alpha
+                        num = K3@np.ones(Xo.shape)
+                        X = c * eta * (K1@Xk / num) + K3@Xo / num - c * eta * (K1@np.ones(X.shape) / num) * Xk
+
+                    elif self.method == 'SGD':
+                        FXk = -1 / (NX * sigma**2) * (K1@Xk - K1@np.ones(X.shape) * Xk)
+                        FXo = -1 / (NXo * sigma**2) * (K3@Xo - K3@np.ones(X.shape) * Xk)
+                        g = 2 * (1 - self.alpha) * FXk / V1 + \
+                            2 * (self.alpha * FXo) / V3
+                        if self.optimization != None:
+                            X = optimization_model.step(g, X, i)
+
+                        else:
+                            X = X - self.learning_schedule(i) * g
 
                     else:
-                        X = X - self.learning_schedule(i) * g
+                        print('the selected method could not be recognized')
 
                 else:
-                    print('the selected method could not be recognized')
+                    num = K3@np.ones(Xo.shape)
+                    X = (K3@Xk / num)
 
-            else:
-                num = K3@np.ones(Xo.shape)
-                X = (K3@Xk / num)
+                # Update sigma
 
-            # Update sigma
+                sigma = (self.xsigma * sigmai) / (self.yota * i + 1)
 
-            sigma = (self.xsigma * sigmai) / (self.yota * i + 1)
-
-            # Save results
+                # Save results
 
             Xf = BestX
 
@@ -393,51 +395,52 @@ class MiniBatchPRI(BaseEstimator, ClusterMixin, TransformerMixin):
                 V1 = 1 / (NX**2) * np.sum(K1)
                 V2 = 1 / (NXo**2) * np.sum(K2)
                 V3 = 1 / (NX * NXo) * np.sum(K3)
+                if V1 != 0 and V2 != 0 and V3 != 0:
 
-                #  Stop criterion
-                if t - 1 == 0:
-                    stopc, BestX, pos, d, j, bestJ, Patient_C, pos = self.convergence(
-                        Xi, Xo, sigma, t - 1)
-                else:
-
-                    stopc, BestX, pos, d, j, bestJ, Patient_C, pos = self.convergence(
-                        Xi, Xo, sigma, t - 1, D[t - 2], J[t - 2], BestX, bestJ, Patient_C, pos)
-                # Compute Divergence
-
-                D.append(d)
-
-                # Cost Function
-
-                J.append(j)
-                plt.ion()
-                plt.plot(Xo[:, 0], Xo[:, 1], 'r*')
-
-                Xk = Xi
-                # Update Xk
-
-                if self.alpha != 0:
-
-                    FXk = -1 / (NX * sigma**2) * (K1@Xk - K1@np.ones(Xi.shape) * Xk)
-                    FXo = -1 / (NXo * sigma**2) * (K3@Xoi - K3@np.ones(Xoi.shape) * Xk)
-                    g = 2 / self.minibatch_size * (2 * (1 -
-                                                        self.alpha) * FXk / V1 + 2 * (self.alpha * FXo) / V3)
-                    if self.optimization != None:
-                        Xi = optimization_model.step(g, Xi, t - 1)
+                    #  Stop criterion
+                    if t - 1 == 0:
+                        stopc, BestX, pos, d, j, bestJ, Patient_C, pos = self.convergence(
+                            Xi, Xo, sigma, t - 1)
                     else:
-                        Xi = Xi - self.learning_schedule(t) * g
-                        print(t)
-                        plt.cla()
-                        plt.plot(Xo[:, 0], Xo[:, 1], 'r*')
-                        plt.plot(Xi[:, 0], Xi[:, 1], 'b*')
-                        plt.pause(0.01)
-                        plt.show()
-                else:
-                    num = K3@np.ones(Xoi.shape)
-                    Xi = (K3@Xk / num)
 
-                # Update sigma
+                        stopc, BestX, pos, d, j, bestJ, Patient_C, pos = self.convergence(
+                            Xi, Xo, sigma, t - 1, D[t - 2], J[t - 2], BestX, bestJ, Patient_C, pos)
+                    # Compute Divergence
 
-                sigma = (self.xsigma * sigmai) / (self.yota * t + 1)
+                    D.append(d)
+
+                    # Cost Function
+
+                    J.append(j)
+                    plt.ion()
+                    plt.plot(Xo[:, 0], Xo[:, 1], 'r*')
+
+                    Xk = Xi
+                    # Update Xk
+
+                    if self.alpha != 0:
+
+                        FXk = -1 / (NX * sigma**2) * (K1@Xk - K1@np.ones(Xi.shape) * Xk)
+                        FXo = -1 / (NXo * sigma**2) * (K3@Xoi - K3@np.ones(Xoi.shape) * Xk)
+                        g = 2 / self.minibatch_size * (2 * (1 -
+                                                            self.alpha) * FXk / V1 + 2 * (self.alpha * FXo) / V3)
+                        if self.optimization != None:
+                            Xi = optimization_model.step(g, Xi, t - 1)
+                        else:
+                            Xi = Xi - self.learning_schedule(t) * g
+                            print(t)
+                            plt.cla()
+                            plt.plot(Xo[:, 0], Xo[:, 1], 'r*')
+                            plt.plot(Xi[:, 0], Xi[:, 1], 'b*')
+                            plt.pause(0.01)
+                            plt.show()
+                    else:
+                        num = K3@np.ones(Xoi.shape)
+                        Xi = (K3@Xk / num)
+
+                    # Update sigma
+
+                    sigma = (self.xsigma * sigmai) / (self.yota * t + 1)
 
                 # Save results
                 Xf = BestX

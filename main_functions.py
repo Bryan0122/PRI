@@ -370,6 +370,7 @@ class MiniBatchPRI(BaseEstimator, ClusterMixin, TransformerMixin):
             NXo = XoS.shape[0]
             sigma = np.mean(cdist(XoS, X))
             sigmai = sigma
+            t = 0
             for i in range(0, Xo.shape[0], self.minibatch_size):
 
                 t += 1
@@ -412,8 +413,6 @@ class MiniBatchPRI(BaseEstimator, ClusterMixin, TransformerMixin):
                     # Cost Function
 
                     J.append(j)
-                    plt.ion()
-                    plt.plot(Xo[:, 0], Xo[:, 1], 'r*')
 
                     Xk = Xi
                     # Update Xk
@@ -428,12 +427,7 @@ class MiniBatchPRI(BaseEstimator, ClusterMixin, TransformerMixin):
                             Xi = optimization_model.step(g, Xi, t - 1)
                         else:
                             Xi = Xi - self.learning_schedule(t) * g
-                            print(t)
-                            plt.cla()
-                            plt.plot(Xo[:, 0], Xo[:, 1], 'r*')
-                            plt.plot(Xi[:, 0], Xi[:, 1], 'b*')
-                            plt.pause(0.01)
-                            plt.show()
+
                     else:
                         num = K3@np.ones(Xoi.shape)
                         Xi = (K3@Xk / num)
@@ -667,8 +661,5 @@ class Nadam(BaseEstimator, ClusterMixin, TransformerMixin):
         for parameter, value in parameters.items():
             setattr(self, parameter, value)
         return self
-
-
-
 
 

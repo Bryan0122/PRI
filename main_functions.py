@@ -213,7 +213,7 @@ class PRI(BaseEstimator, ClusterMixin, TransformerMixin):
         labels = 2 * A - B - C
         return np.argmin(labels, axis=0)
 
-    def predict(self, X, y=None):
+    def predict(self, X):
         self.labels_pred = self.fit(X).labels_
         return self.labels_pred
 

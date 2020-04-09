@@ -124,8 +124,10 @@ class PRI(BaseEstimator, ClusterMixin, TransformerMixin):
                         2 * (self.alpha * FXo) / V3
                     if self.optimization != None:
                         X = optimization_model.step(g, X, i)
+
                     else:
                         X = X - self.learning_schedule(i) * g
+
                 else:
                     print('the selected method could not be recognized')
 
@@ -211,7 +213,7 @@ class PRI(BaseEstimator, ClusterMixin, TransformerMixin):
         labels = 2 * A - B - C
         return np.argmin(labels, axis=0)
 
-    def predict(self, X):
+    def predict(self, X, y=None):
         self.labels_pred = self.fit(X).labels_
         return self.labels_pred
 
@@ -302,7 +304,7 @@ class spectralClustering(BaseEstimator, ClusterMixin, TransformerMixin):
 
 
 class MiniBatchPRI(BaseEstimator, ClusterMixin, TransformerMixin):
-    def __init__(self, lambda_=2, sigma_initial=30, ayota=1, max_epochs=1000, tol=5E-8, reduction_=False, n_groups=3, namedb=None, minibatch_size=16, optimization = None, t0 = 100, t1 = 1000, PC = 0.4):
+    def __init__(self, lambda_=2, sigma_initial=30, ayota=1, max_epochs=1000, tol=5E-8, reduction_=False, n_groups=3, namedb=None, minibatch_size=8, optimization = None, t0 = 1, t1 = 10000, PC = 0.4):
 
         self.niter = max_epochs
         self.tole = tol
@@ -318,7 +320,7 @@ class MiniBatchPRI(BaseEstimator, ClusterMixin, TransformerMixin):
         self.t1 = t1
         self.PC = PC
 
-    def fit(self, X):
+    def fit(self, X, y=None):
         self.X = X
         self.cluster_centers_, self.labels_ = self.pri_MiniBatch(X)
 
@@ -405,6 +407,8 @@ class MiniBatchPRI(BaseEstimator, ClusterMixin, TransformerMixin):
                 # Cost Function
 
                 J.append(j)
+                plt.ion()
+                plt.plot(Xo[:, 0], Xo[:, 1], 'r*')
 
                 Xk = Xi
                 # Update Xk
@@ -419,6 +423,12 @@ class MiniBatchPRI(BaseEstimator, ClusterMixin, TransformerMixin):
                         Xi = optimization_model.step(g, Xi, t - 1)
                     else:
                         Xi = Xi - self.learning_schedule(t) * g
+                        print(t)
+                        plt.cla()
+                        plt.plot(Xo[:, 0], Xo[:, 1], 'r*')
+                        plt.plot(Xi[:, 0], Xi[:, 1], 'b*')
+                        plt.pause(0.01)
+                        plt.show()
                 else:
                     num = K3@np.ones(Xoi.shape)
                     Xi = (K3@Xk / num)
@@ -648,9 +658,20 @@ class Nadam(BaseEstimator, ClusterMixin, TransformerMixin):
         return {"alpha": self.alpha, "Beta1": self.B1, "Beta2": self.B2, 'epsilon': self.e}
 
     def set_params(self, **parameters):
+
         for parameter, value in parameters.items():
             setattr(self, parameter, value)
         return self
 
+
+data = sio.loadmat('DB.mat')['DB'][0, 0]
+happy = data['happy']
+sc = SpectralClustering(n_clusters=3, n_neighbors=5, gamma = 1000)
+sc.fit(happy)
+labels_happy = sc.labels_
+p = MiniBatchPRI(n_groups=3, lambda_=35, sigma_initial=70,
+                 reduction_ = False, t0=1, t1=100000)
+p.fit(happy)
+p.results()
 
 

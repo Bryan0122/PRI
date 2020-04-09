@@ -27,8 +27,6 @@ class PRI(BaseEstimator, ClusterMixin, TransformerMixin):
         self.t1 = t1
         self.PC = PC
 
-        return self
-
     def fit(self, X, y=None):
         self.X = X
         self.cluster_centers_, self.labels_ = self.pri_fuction(X)
@@ -322,8 +320,6 @@ class MiniBatchPRI(BaseEstimator, ClusterMixin, TransformerMixin):
         self.t0 = t0
         self.t1 = t1
         self.PC = PC
-
-        return self
 
     def fit(self, X, y=None):
         self.X = X

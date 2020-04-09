@@ -27,7 +27,7 @@ class PRI(BaseEstimator, ClusterMixin, TransformerMixin):
         self.t1 = t1
         self.PC = PC
 
-    def fit(self, X):
+    def fit(self, X, y=None):
         self.X = X
         self.cluster_centers_, self.labels_ = self.pri_fuction(X)
 

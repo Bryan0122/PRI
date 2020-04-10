@@ -16,10 +16,11 @@ class RFF(BaseEstimator):
         self.D = D
         self.fitted = False
 
-    def fit(self, X, Xp, y_true=None):
+    def fit(self, X, y_true=None):
+        Xp = X
         Z = self.RFF_main(X)
         Zp = self.RFF_main(Xp)
-        self.y_pred = self.compute_kernel(Z.transform(X), Zp.transform(X))
+        self.y_pred = self.compute_kernel(Z.transform(X), Zp.transform(Xp))
         return self
 
     def RFF_main(self, X):

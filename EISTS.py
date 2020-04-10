@@ -1,9 +1,7 @@
 from sklearn.base import BaseEstimator
 import numpy as np
-from scipy.spatial.distance import cdist
 import scipy.io as sio
 import math as math
-import matplotlib.pyplot as plt
 
 
 class EISTS(BaseEstimator):

@@ -16,7 +16,7 @@ class RFF(BaseEstimator):
         self.D = D
         self.fitted = False
 
-    def fit(self, X, y_true=None):
+    def fit(self, X, y=None):
         Xp = X
         Z = self.RFF_main(X)
         Zp = self.RFF_main(Xp)
@@ -54,7 +54,7 @@ class RFF(BaseEstimator):
         return K
 
     def predict(self, X):
-        self.y_pred = self.fit(X, X)
+        self.y_pred = self.fit(X)
         return self.y_pred
 
     def get_params(self, deep=True):

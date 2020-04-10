@@ -9,14 +9,19 @@ import matplotlib.pyplot as plt
 
 
 class RFF(BaseEstimator):
-    def __init__(self, gamma = 0.1, D = 50, metric = "rbf"):
+    def __init__(self, gamma = 1, D = 1, metric = "rbf"):
         self.gamma = gamma
         self.metric = metric
         # Dimensionality D (number of MonteCarlo samples)
         self.D = D
         self.fitted = False
 
-    def fit(self, X, y=None):
+    def fit(self, X, Xp, y=None):
+        Z = self.RFF_main(X)
+        Zp = self.RFF_main(Xp)
+        return self.compute_kernel(Z.transform(X), Zp.transform(X))
+
+    def RFF_main(self, X):
         """ Generates MonteCarlo random samples """
         d = X.shape[1]
         # Generate D iid samples from p(w)
@@ -41,19 +46,17 @@ class RFF(BaseEstimator):
             np.cos((X.dot(self.w.T) + self.u[np.newaxis, :]))
         return Z
 
-    def compute_kernel(self, X):
+    def compute_kernel(self, Z, Zp):
         """ Computes the approximated kernel matrix K """
-        if not self.fitted:
-            raise NotFittedError(
-                "RBF_MonteCarlo must be fitted beform computing the kernel matrix")
-        Z = self.transform(X)
-        K = Z.dot(Z.T)
+        K = Z.dot(Zp.T)
         return K
 
     def get_params(self, deep=True):
-        return {"r": self.r, "sigma": self.sigma, }
+        return {"gamma": self.gamma, "D": self.D, }
 
     def set_params(self, **parameters):
         for parameter, value in parameters.items():
             setattr(self, parameter, value)
         return self
+
+

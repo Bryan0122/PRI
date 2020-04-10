@@ -19,7 +19,8 @@ class RFF(BaseEstimator):
     def fit(self, X, Xp, y_true=None):
         Z = self.RFF_main(X)
         Zp = self.RFF_main(Xp)
-        return self.compute_kernel(Z.transform(X), Zp.transform(X))
+        self.y_pred = self.compute_kernel(Z.transform(X), Zp.transform(X))
+        return self
 
     def RFF_main(self, X):
         """ Generates MonteCarlo random samples """

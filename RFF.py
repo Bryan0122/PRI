@@ -16,7 +16,7 @@ class RFF(BaseEstimator):
         self.D = D
         self.fitted = False
 
-    def fit(self, X, Xp, y=None):
+    def fit(self, X, Xp, y_true=None):
         Z = self.RFF_main(X)
         Zp = self.RFF_main(Xp)
         return self.compute_kernel(Z.transform(X), Zp.transform(X))
@@ -50,6 +50,10 @@ class RFF(BaseEstimator):
         """ Computes the approximated kernel matrix K """
         K = Z.dot(Zp.T)
         return K
+
+    def predict(self, X):
+        self.y_pred = self.fit(X, X)
+        return self.y_pred
 
     def get_params(self, deep=True):
         return {"gamma": self.gamma, "D": self.D, }
